@@ -47,7 +47,7 @@ function NavbarLink({
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "text-sm font-medium text-neutral-300 transition-colors outline-none hover:text-white focus-visible:text-white",
+        "text-[13px] font-medium text-neutral-300 transition-colors outline-none hover:text-white focus-visible:text-white",
         active && "text-white",
         className
       )}
@@ -70,7 +70,7 @@ function Logo({ className }: { className?: string }) {
         width={128}
         height={32}
         priority
-        className="h-7 w-auto md:h-8"
+        className="h-6 w-auto md:h-7"
       />
     </Link>
   )
@@ -107,21 +107,21 @@ function AuthActions({
   }
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-4 md:gap-5">
       <Separator
         orientation="vertical"
-        className="h-6 self-auto bg-white/15"
+        className="h-5 self-auto bg-white/15"
       />
       <NavbarLink
         href="/sign-in"
         label="Sign In"
         active={isActive("/sign-in", pathname)}
-        className="text-brand hover:text-brand-hover focus-visible:text-brand-hover"
+        className="text-[13px] text-brand hover:text-brand-hover focus-visible:text-brand-hover"
       />
       <Button
         nativeButton={false}
         render={<Link href="/sign-up" />}
-        className="h-10 bg-brand px-5 text-brand-foreground hover:bg-brand-hover"
+        className="h-8 bg-brand px-4 text-[13px] text-brand-foreground hover:bg-brand-hover"
       >
         Get Started
       </Button>
@@ -135,13 +135,13 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#1e1e1e]">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6 md:h-[4.5rem] lg:px-10">
+      <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between px-5 md:h-16 lg:px-12">
         <Logo />
 
         {/* Desktop navigation */}
         <nav
           aria-label="Main"
-          className="hidden items-center gap-8 md:flex md:gap-10"
+          className="hidden items-center gap-7 md:flex md:gap-8"
         >
           {navLinks.map((link) => (
             <NavbarLink
