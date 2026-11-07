@@ -16,6 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "/jobs" },
@@ -132,6 +133,10 @@ function AuthActions({
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
+  const{data: session} = useSession();
+
+  console.log("Session in Navbar:", session); // Log the session data to the console
+
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#1e1e1e]">

@@ -13,9 +13,9 @@ export function SignUpForm() {
       mode="sign-up"
       onSubmit={async (data: AuthFormData) => {
         const { error } = await authClient.signUp.email({
-          name: data.name ?? "", // required - the user's name
-          email: data.email, // required
-          password: data.password, // required, 8-128 characters
+          name: data.name ?? "", 
+          email: data.email, 
+          password: data.password, 
           callbackURL: "/",
           // Persisted via better-auth `user.additionalFields` in lib/auth.ts
           // (defaultValue: "seeker" when not provided)
