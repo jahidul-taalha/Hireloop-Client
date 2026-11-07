@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next"
 
 import { AuthCard } from "@/components/auth-card"
