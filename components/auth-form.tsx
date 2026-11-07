@@ -14,18 +14,18 @@ export type AuthMode = "sign-in" | "sign-up"
 export const fieldClass =
   "h-10 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
 
-// The collected shape (integration point — wire this into better-auth later)
+// Data shape passed to your auth handlers (integration point → better-auth)
 export type AuthRole = "seeker" | "recruiter"
 
-export type AuthPayload =
-  | { mode: "sign-in"; email: string; password: string; remember: "on" | null }
-  | {
-      mode: "sign-up"
-      role: AuthRole
-      name: string
-      email: string
-      password: string
-    }
+export type AuthFormData = {
+  email: string
+  password: string
+  name?: string
+  remember?: boolean
+  role?: AuthRole
+}
+
+export type AuthSubmitHandler = (data: AuthFormData) => void | Promise<void>
 
 const roleOptions = [
   {
@@ -45,13 +45,20 @@ const roleOptions = [
 const roleToggle =
   "flex cursor-pointer flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors outline-none focus-visible:border-ring"
 
-export function AuthForm({ mode }: { mode: AuthMode }) {
+export function AuthForm({
+  mode,
+  onSubmit,
+}: {
+  mode: AuthMode
+  onSubmit?: AuthSubmitHandler
+}) {
   const [showPassword, setShowPassword] = React.useState(false)
   const [role, setRole] = React.useState<AuthRole>("seeker")
   const [error, setError] = React.useState<string | null>(null)
-  const [collected, setCollected] = React.useState<AuthPayload | null>(null)
+  const [submitting, setSubmitting] = React.useState(false)
+  const [collected, setCollected] = React.useState<AuthFormData | null>(null)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = event.currentTarget
     const data = Object.fromEntries(new FormData(form).entries())
@@ -63,34 +70,45 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       }
       if (password !== confirmPassword) {
         setError("Passwords do not match.")
-        setCollected(null)
         return
       }
     }
 
     setError(null)
 
-    const payload =
+    const authData: AuthFormData =
       mode === "sign-in"
         ? {
-            mode,
             email: data.email as string,
             password: data.password as string,
-            remember: (data.remember as "on") ?? null,
+            remember: data.remember === "on",
           }
         : {
-            mode,
             role,
             name: data.name as string,
             email: data.email as string,
             password: data.password as string,
           }
 
-    // TODO: replace with better-auth client, e.g.:
-    // authClient.signUp.email({ name, email, password }, { ... })
-    // then persist `role` on your user record (metadata / DB column)
-    console.log(`[auth] ${mode} form data:`, payload)
-    setCollected(payload)
+    if (onSubmit) {
+      // Kick off the auth flow; errors surface below via thrown/rejected values
+      setSubmitting(true)
+      try {
+        await onSubmit(authData)
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again."
+        )
+      } finally {
+        setSubmitting(false)
+      }
+    } else {
+      // No integration wired yet — just collect and log the form data
+      console.log(`[auth] ${mode} form data:`, authData)
+      setCollected(authData)
+    }
   }
 
   return (
@@ -240,9 +258,14 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
       <Button
         type="submit"
+        disabled={submitting}
         className="mt-1 h-10 w-full bg-brand text-brand-foreground hover:bg-brand-hover"
       >
-        {mode === "sign-in" ? "Sign In" : "Create Account"}
+        {submitting
+          ? "Please wait…"
+          : mode === "sign-in"
+            ? "Sign In"
+            : "Create Account"}
       </Button>
 
       {error && (

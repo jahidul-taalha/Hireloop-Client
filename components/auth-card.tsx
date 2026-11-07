@@ -2,14 +2,19 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { cn } from "@/lib/utils"
-import { AuthForm, type AuthMode } from "@/components/auth-form"
 
 const modes = [
   { mode: "sign-in", label: "Sign In", href: "/sign-in" },
   { mode: "sign-up", label: "Sign Up", href: "/sign-up" },
 ] as const
 
-export function AuthCard({ mode }: { mode: AuthMode }) {
+export function AuthCard({
+  mode,
+  children,
+}: {
+  mode: "sign-in" | "sign-up"
+  children: React.ReactNode
+}) {
   return (
     <main className="relative isolate flex min-h-svh flex-col overflow-hidden bg-[#101010]">
       {/* Faint violet glow from the top, consistent with the landing page */}
@@ -62,9 +67,7 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
               : "Join thousands of job seekers and recruiters."}
           </p>
 
-          <div className="mt-6">
-            <AuthForm mode={mode} />
-          </div>
+          <div className="mt-6">{children}</div>
         </div>
       </div>
     </main>
