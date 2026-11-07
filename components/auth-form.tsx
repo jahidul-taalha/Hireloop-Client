@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
+import { Building2, Eye, EyeOff, UserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,17 +15,39 @@ export const fieldClass =
   "h-10 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
 
 // The collected shape (integration point — wire this into better-auth later)
+export type AuthRole = "seeker" | "recruiter"
+
 export type AuthPayload =
   | { mode: "sign-in"; email: string; password: string; remember: "on" | null }
   | {
       mode: "sign-up"
+      role: AuthRole
       name: string
       email: string
       password: string
     }
 
+const roleOptions = [
+  {
+    value: "seeker" as AuthRole,
+    label: "Job Seeker",
+    icon: UserRound,
+    hint: "I'm looking for a job",
+  },
+  {
+    value: "recruiter" as AuthRole,
+    label: "Recruiter",
+    icon: Building2,
+    hint: "I'm hiring for a company",
+  },
+]
+
+const roleToggle =
+  "flex cursor-pointer flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors outline-none focus-visible:border-ring"
+
 export function AuthForm({ mode }: { mode: AuthMode }) {
   const [showPassword, setShowPassword] = React.useState(false)
+  const [role, setRole] = React.useState<AuthRole>("seeker")
   const [error, setError] = React.useState<string | null>(null)
   const [collected, setCollected] = React.useState<AuthPayload | null>(null)
 
@@ -58,18 +80,56 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           }
         : {
             mode,
+            role,
             name: data.name as string,
             email: data.email as string,
             password: data.password as string,
           }
 
-    // TODO: replace with better-auth client once auth flows are integrated
+    // TODO: replace with better-auth client, e.g.:
+    // authClient.signUp.email({ name, email, password }, { ... })
+    // then persist `role` on your user record (metadata / DB column)
     console.log(`[auth] ${mode} form data:`, payload)
     setCollected(payload)
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {mode === "sign-up" && (
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="mb-1.5 text-sm font-medium text-neutral-300">
+            I am joining as
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            {roleOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={role === option.value}
+                onClick={() => setRole(option.value)}
+                className={cn(
+                  roleToggle,
+                  role === option.value
+                    ? "border-brand-hover/60 bg-brand/15 text-white"
+                    : "border-white/10 bg-white/5 text-neutral-400 hover:text-neutral-200"
+                )}
+              >
+                <span className="flex items-center gap-1.5">
+                  <option.icon
+                    className={cn(
+                      "size-4",
+                      role === option.value ? "text-brand" : "text-neutral-500"
+                    )}
+                  />
+                  <span className="text-sm font-medium">{option.label}</span>
+                </span>
+                <span className="text-xs text-neutral-500">{option.hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
       {mode === "sign-up" && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="name" className="text-neutral-300">
