@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { useSession } from "@/lib/auth-client"
+import { useSession , signOut } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "/jobs" },
@@ -28,6 +28,8 @@ function isActive(href: string, pathname: string) {
   if (href === "/") return pathname === "/"
   return pathname === href || pathname.startsWith(`${href}/`)
 }
+  
+
 
 function NavbarLink({
   href,

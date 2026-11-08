@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation"
 
 import { authClient } from "@/lib/auth-client"
 import { AuthForm, type AuthFormData } from "@/components/auth-form"
+import { redirect, usePathname } from 'next/navigation'
 
 export function SignUpForm() {
+  
   const router = useRouter()
 
   return (
@@ -26,7 +28,12 @@ export function SignUpForm() {
             error.message || "Unable to create your account. Try again."
           )
         }
+        if (!error) {
+          // Account created — go home
+          router.push("/")
+        }   
         // Account created — go home
+        router.refresh()
         router.push("/")
       }}
     />
