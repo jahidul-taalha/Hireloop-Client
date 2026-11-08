@@ -3,7 +3,7 @@
 import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Menu } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { useSession , signOut } from "@/lib/auth-client"
+import { authClient, useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "/jobs" },
@@ -84,9 +84,66 @@ function AuthActions({
   onNavigate,
 }: {
   isMobile?: boolean
-  onNavigate?: () => void
+  onNavigate?: () =>void
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { data: session } = useSession()
+  const user = session?.user
+
+  async function handleSignOut() {
+    await authClient.signOut()
+    // End of session — back to the homepage
+    onNavigate?.()
+    router.replace("/")
+    router.refresh()
+  }
+
+  if (user) {
+    // Logged in: Welcome (user name) + Sign Out; Get Started hidden
+    const welcome = (
+      <Button
+        className={cn(
+          isMobile
+            ? "h-10 w-full bg-brand text-brand-foreground hover:bg-brand-hover"
+            : "h-8 max-w-44 bg-brand px-4 text-[13px] text-brand-foreground hover:bg-brand-hover"
+        )}
+      >
+        <span className="truncate capitalize">{user.name}</span>
+      </Button>
+    )
+    const signOut = (
+      <Button
+        onClick={handleSignOut}
+        variant="outline"
+        className={cn(
+          isMobile
+            ? "h-10 w-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+            : "h-8 border-white/15 bg-white/5 px-4 text-[13px] text-white hover:bg-white/10 hover:text-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+        )}
+      >
+        Sign Out
+      </Button>
+    )
+    if (isMobile) {
+      return (
+        <div className="flex flex-col gap-3">
+          {welcome}
+          {signOut}
+        </div>
+      )
+    }
+    return (
+      <div className="flex items-center gap-4 md:gap-5">
+        <Separator
+          orientation="vertical"
+          className="h-5 self-auto bg-white/15"
+        />
+        {welcome}
+        {signOut}
+      </div>
+    )
+  }
 
   if (isMobile) {
     return (
@@ -135,10 +192,6 @@ function AuthActions({
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
-  const{data: session} = useSession();
-
-  console.log("Session in Navbar:", session); // Log the session data to the console
-
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#1e1e1e]">
