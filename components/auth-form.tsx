@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Building2, Eye, EyeOff, UserRound } from "lucide-react"
+import { Building2, Eye, EyeOff, Shield, UserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,7 +15,7 @@ export const fieldClass =
   "h-10 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
 
 // Data shape passed to your auth handlers (integration point → better-auth)
-export type AuthRole = "seeker" | "recruiter"
+export type AuthRole = "seeker" | "recruiter" | "admin"
 
 export type AuthFormData = {
   email: string
@@ -39,6 +39,12 @@ const roleOptions = [
     label: "Recruiter",
     icon: Building2,
     hint: "I'm hiring for a company",
+  },
+  {
+    value: "admin" as AuthRole,
+    label: "Admin",
+    icon: Shield,
+    hint: "I'm managing the platform",
   },
 ]
 
