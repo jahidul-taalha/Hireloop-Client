@@ -1,3 +1,5 @@
+"use client"
+
 import {
     Sidebar,
     SidebarContent,
@@ -44,7 +46,7 @@ const menuItemsByRole: Record<string, MenuItem[]> = {
         { id: "recruiter-dashboard", name: "Dashboard", url: "/dashboard/recruiter", icon: LayoutDashboard },
         { id: "recruiter-my-company", name: "My Company", url: "/dashboard/recruiter/company", icon: Building2 },
         { id: "recruiter-manage-jobs", name: "Manage Jobs", url: "/dashboard/recruiter/jobs", icon: Briefcase },
-        { id: "recruiter-manage-jobs", name: "Add Jobs", url: "/dashboard/recruiter/jobs/new", icon: PlusCircle },
+        { id: "recruiter-add-jobs", name: "Add Jobs", url: "/dashboard/recruiter/jobs/new", icon: PlusCircle },
         { id: "recruiter-applications", name: "Applications", url: "/dashboard/recruiter/applications", icon: FileText },
         { id: "recruiter-settings", name: "Settings", url: "/dashboard/recruiter/settings", icon: Settings },
     ],
