@@ -18,53 +18,13 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
-
-// ── Form data ────────────────────────────────────────────────────────────────
-// One flat object, one state — the whole form is collected into this single
-// shape and handed to the backend when the integration is wired up.
-
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
-const CATEGORIES = [
-  "Engineering & Tech",
-  "Design & Creative",
-  "Marketing",
-  "Product",
-  "Sales & Business",
-  "Customer Support",
-  "Finance & Legal",
-  "Operations",
-]
-const SALARY_FREQUENCIES = ["per hour", "per month", "per year"]
-
-export type JobFormData = {
-  title: string
-  company: string
-  category: string
-  jobType: (typeof JOB_TYPES)[number]
-  isRemote: boolean
-  location: string
-  deadline: string
-  minSalary: string
-  maxSalary: string
-  salaryFrequency: string
-  responsibilities: string
-  requirements: string
-}
-
-const INITIAL_JOB_FORM: JobFormData = {
-  title: "",
-  company: "",
-  category: CATEGORIES[0],
-  jobType: "Full-time",
-  isRemote: false,
-  location: "",
-  deadline: "",
-  minSalary: "",
-  maxSalary: "",
-  salaryFrequency: SALARY_FREQUENCIES[0],
-  responsibilities: "",
-  requirements: "",
-}
+import {
+  CATEGORIES,
+  INITIAL_JOB_FORM,
+  JOB_TYPES,
+  SALARY_FREQUENCIES,
+  type JobFormData,
+} from "@/lib/jobs"
 
 // ── Small building blocks ────────────────────────────────────────────────────
 
@@ -109,19 +69,27 @@ function Field({
 export default function NewJobPage() {
   const [form, setForm] = React.useState<JobFormData>(INITIAL_JOB_FORM)
   const [collected, setCollected] = React.useState<JobFormData | null>(null)
+  const [submitting, setSubmitting] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   // Single generic updater — every field does update("name", value)
   const update = <K extends keyof JobFormData>(key: K, value: JobFormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    // Integration point → POST `form` to the jobs API when the backend is ready
-    console.log("[new job] form data:", form)
-    setCollected(form)
+    setSubmitting(true)
+    setError(null)
+    try {
+      // Collect the whole form as one object and hand it to the backend
+      await createJob(form)
+      setCollected(form)
+    } catch {
+      setError("Could not publish the job post. Is the backend running?")
+    } finally {
+      setSubmitting(false)
+    }
   }
-
-const result = createJob(jobData);
 
 
   return (
@@ -151,9 +119,10 @@ const result = createJob(jobData);
           <Button
             type="submit"
             form="new-job-form"
+            disabled={submitting}
             className="h-10 bg-brand px-5 text-brand-foreground hover:bg-brand-hover"
           >
-            Publish Job
+            {submitting ? "Publishing…" : "Publish Job"}
           </Button>
         </header>
 
@@ -362,7 +331,12 @@ const result = createJob(jobData);
               role="status"
               className="text-xs text-emerald-400"
             >
-              ✓ Job post data captured — ready to wire into the backend.
+              ✓ Job post published.
+            </p>
+          )}
+          {error && (
+            <p role="alert" className="text-xs text-[#f87171]">
+              {error}
             </p>
           )}
         </form>

@@ -1,9 +1,9 @@
-import { JobFormData } from "@/app/dashboard/recruiter/jobs/new/page";
+import { type JobFormData } from "@/lib/jobs";
 
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:5000";
 
-Const BASE_URL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:5000";
-
-export const createJob = async (data : JobFormData) => {
+export const createJob = async (data: JobFormData) => {
   const response = await fetch(`${BASE_URL}/api/jobs`, {
     method: "POST",
     headers: {
