@@ -1,15 +1,20 @@
+"use server";
+
+import { db } from "@/lib/db";
 import { type JobFormData } from "@/lib/jobs";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:5000";
-
-export const createJob = async (data: JobFormData) => {
-  const response = await fetch(`${BASE_URL}/api/jobs`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+// Saves the job post straight into the Atlas `Adminloop.jobs` collection.
+// (There is no separate backend server — the Next app talks to MongoDB directly,
+// the same connection better-auth uses for the account/session/user collections.)
+export async function createJob(data: JobFormData) {
+  const result = await db.collection("jobs").insertOne({
+    ...data,
+    createdAt: new Date(),
   });
-  return response.json();
-};
+
+  if (!result.acknowledged) {
+    throw new Error("Insert was not acknowledged by MongoDB");
+  }
+
+  return { success: true, id: result.insertedId.toString() };
+}
