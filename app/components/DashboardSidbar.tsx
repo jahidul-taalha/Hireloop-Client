@@ -13,6 +13,7 @@ import {
     BarChart3,
     Bookmark,
     Briefcase,
+    PlusCircle,
     Building2,
     FileText,
     LayoutDashboard,
@@ -21,6 +22,7 @@ import {
     Wallet,
     type LucideIcon,
 } from "lucide-react"
+import Link from "next/link";
 
 type MenuItem = {
     id: string;
@@ -42,6 +44,7 @@ const menuItemsByRole: Record<string, MenuItem[]> = {
         { id: "recruiter-dashboard", name: "Dashboard", url: "/dashboard/recruiter", icon: LayoutDashboard },
         { id: "recruiter-my-company", name: "My Company", url: "/dashboard/recruiter/company", icon: Building2 },
         { id: "recruiter-manage-jobs", name: "Manage Jobs", url: "/dashboard/recruiter/jobs", icon: Briefcase },
+        { id: "recruiter-manage-jobs", name: "Add Jobs", url: "/dashboard/recruiter/jobs/new", icon: PlusCircle },
         { id: "recruiter-applications", name: "Applications", url: "/dashboard/recruiter/applications", icon: FileText },
         { id: "recruiter-settings", name: "Settings", url: "/dashboard/recruiter/settings", icon: Settings },
     ],
@@ -70,7 +73,7 @@ export function DashboardSidebar() {
                     <SidebarMenu>
                         {menuItemsByRole[role].map((item) => (
                             <SidebarMenuItem key={item.id}>
-                                <SidebarMenuButton render={<a href={item.url} />}>
+                                <SidebarMenuButton render={<Link href={item.url} />}>
                                     <item.icon />
                                     <span>{item.name}</span>
                                 </SidebarMenuButton >
