@@ -9,6 +9,13 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
     },
+    // Allow auth requests from the LAN address (phones / other PCs on the
+    // network). Without this better-auth answers 403 FORBIDDEN for any origin
+    // other than BETTER_AUTH_URL (localhost:3000).
+    trustedOrigins: [
+        "http://192.168.0.108:3000",
+        "http://192.168.0.*:3000",
+    ],
     user: {
          additionalFields: {
             role: {
