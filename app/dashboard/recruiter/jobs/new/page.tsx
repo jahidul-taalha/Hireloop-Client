@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { createJob } from "@/lib/actions/jobs"
 
 // ── Form data ────────────────────────────────────────────────────────────────
 // One flat object, one state — the whole form is collected into this single
@@ -35,7 +36,7 @@ const CATEGORIES = [
 ]
 const SALARY_FREQUENCIES = ["per hour", "per month", "per year"]
 
-type JobFormData = {
+export type JobFormData = {
   title: string
   company: string
   category: string
@@ -119,6 +120,9 @@ export default function NewJobPage() {
     console.log("[new job] form data:", form)
     setCollected(form)
   }
+
+const result = createJob(jobData);
+
 
   return (
     <main className="min-h-svh bg-[#101010] px-6 py-8">
