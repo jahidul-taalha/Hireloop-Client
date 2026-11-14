@@ -1,6 +1,4 @@
-"use client"
 
-import * as React from "react"
 import Link from "next/link"
 import {
   Briefcase,
@@ -30,6 +28,8 @@ import {
   formatLocation,
   type JobPost,
 } from "@/lib/jobs"
+import { getJobs } from "@/lib/api/jobs"
+
 
 // ── Small building blocks ────────────────────────────────────────────────────
 
@@ -61,8 +61,10 @@ function TypePill({ type }: { type: JobPost["jobType"] }) {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ManageJobsPage() {
-  const [jobs, setJobs] = React.useState<JobPost[]>(DUMMY_JOB_POSTS)
+export default async  function ManageJobsPage() {
+    const jobs: JobPost[] = await getJobs();
+    
+
 
   const deleteJob = (id: string) =>
     setJobs((prev) => prev.filter((job) => job.id !== id))
@@ -133,7 +135,7 @@ export default function ManageJobsPage() {
             </TableHeader>
             <TableBody>
               {jobs.map((job) => (
-                <TableRow key={job.id} className="border-white/10 hover:bg-white/[0.02]">
+                <TableRow key={job._id} className="border-white/10 hover:bg-white/[0.02]">
                   {/* Job Title & Dept */}
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
