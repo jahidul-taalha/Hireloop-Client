@@ -11,6 +11,7 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useSession } from "@/lib/auth-client";
+import type { MenuItem, UserRole } from "@/lib/types";
 import {
     BarChart3,
     Bookmark,
@@ -26,14 +27,7 @@ import {
 } from "lucide-react"
 import Link from "next/link";
 
-type MenuItem = {
-    id: string;
-    name: string;
-    url: string;
-    icon: LucideIcon;
-};
-
-const menuItemsByRole: Record<string, MenuItem[]> = {
+const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     seeker: [
         { id: "seeker-dashboard", name: "Dashboard", url: "/dashboard/seeker", icon: LayoutDashboard },
         { id: "seeker-jobs", name: "Jobs", url: "/dashboard/seeker/jobs", icon: Briefcase },
@@ -64,7 +58,7 @@ const menuItemsByRole: Record<string, MenuItem[]> = {
 
 export function DashboardSidebar() {
     const {data: session, isPending} = useSession();
-    const role = session?.user?.role || 'seeker';
+    const role = (session?.user?.role || "seeker") as UserRole;
     return (
         <Sidebar>
             <SidebarHeader />

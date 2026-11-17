@@ -1,39 +1,18 @@
-// Shared job-post types, constants and helpers.
-// `JobFormData` is the exact shape the New Job page collects; `JobPost`
-// extends it with the extra columns the Manage Jobs table needs.
+// Job constants, seed data and display helpers.
+// Types live in `lib/types.ts` and are re-exported here so existing
+// `from "@/lib/jobs"` imports keep working.
 
-export const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
-export type JobType = (typeof JOB_TYPES)[number]
+export * from "@/lib/types"
 
-export const CATEGORIES = [
-  "Engineering & Tech",
-  "Design & Creative",
-  "Marketing",
-  "Product",
-  "Sales & Business",
-  "Customer Support",
-  "Finance & Legal",
-  "Operations",
-]
+import {
+  CATEGORIES,
+  SALARY_FREQUENCIES,
+  type JobFormData,
+  type JobPost,
+  type JobRecord,
+} from "@/lib/types"
 
-export const SALARY_FREQUENCIES = ["per hour", "per month", "per year"]
-
-export type JobFormData = {
-  title: string
-  company: string
-  category: string
-  jobType: JobType
-  isRemote: boolean
-  location: string
-  deadline: string
-  minSalary: string
-  maxSalary: string
-  salaryFrequency: string
-  responsibilities: string
-  requirements: string
-}
-
-export const INITIAL_JOB_FORM: JobFormData = {
+export const INITIAL_JOB_FORM = {
   title: "",
   company: "",
   category: CATEGORIES[0],
@@ -46,25 +25,13 @@ export const INITIAL_JOB_FORM: JobFormData = {
   salaryFrequency: SALARY_FREQUENCIES[0],
   responsibilities: "",
   requirements: "",
-}
-
-// ── Table row shape (JobFormData + dashboard-only columns) ───────────────────
-
-export type JobPostStatus = "Active" | "Expired"
-
-export type JobPost = JobFormData & {
-  id: string
-  applicants: number
-  status: JobPostStatus
-  /** Relative label shown under the deadline, e.g. "Posted 4d ago". */
-  postedLabel: string
-}
+} satisfies JobFormData
 
 // Dummy data straight from the "Manage Job Posts" Figma screen —
-// every row is a real JobFormData plus the table-only fields.
+// handy for previews/tests until every job comes from the database.
 export const DUMMY_JOB_POSTS: JobPost[] = [
   {
-    id: "job-1",
+    _id: "job-1",
     title: "Frontend Developer",
     company: "HirePulse Network",
     category: "Engineering & Tech",
@@ -78,12 +45,13 @@ export const DUMMY_JOB_POSTS: JobPost[] = [
     responsibilities:
       "Craft responsive, micro-interaction rich products alongside designers and backend engineers.",
     requirements: "3+ years of React, TypeScript and modern state architectures.",
+    createdAt: "2025-05-10T00:00:00.000Z",
     applicants: 34,
     status: "Active",
     postedLabel: "Posted 4d ago",
   },
   {
-    id: "job-2",
+    _id: "job-2",
     title: "Senior Product Designer",
     company: "HirePulse Labs",
     category: "Design & Creative",
@@ -97,12 +65,13 @@ export const DUMMY_JOB_POSTS: JobPost[] = [
     responsibilities:
       "Own end-to-end product design for our core platform experience.",
     requirements: "Strong portfolio of complex, data-heavy product interfaces.",
+    createdAt: "2025-05-03T00:00:00.000Z",
     applicants: 19,
     status: "Active",
     postedLabel: "Posted 1w ago",
   },
   {
-    id: "job-3",
+    _id: "job-3",
     title: "DevOps Specialist",
     company: "HirePulse Platform",
     category: "Engineering & Tech",
@@ -115,12 +84,13 @@ export const DUMMY_JOB_POSTS: JobPost[] = [
     salaryFrequency: "per year",
     responsibilities: "Keep our infrastructure monitoring tooling reliable and fast.",
     requirements: "Deep experience with Kubernetes, Terraform and observability stacks.",
+    createdAt: "2025-04-26T00:00:00.000Z",
     applicants: 12,
     status: "Active",
     postedLabel: "Posted 2w ago",
   },
   {
-    id: "job-4",
+    _id: "job-4",
     title: "Product Marketing Lead",
     company: "HirePulse Network",
     category: "Marketing",
@@ -133,12 +103,13 @@ export const DUMMY_JOB_POSTS: JobPost[] = [
     salaryFrequency: "per year",
     responsibilities: "Position and launch our infrastructure products across regions.",
     requirements: "5+ years in B2B SaaS product marketing.",
+    createdAt: "2025-05-09T00:00:00.000Z",
     applicants: 27,
     status: "Active",
     postedLabel: "Posted 5d ago",
   },
   {
-    id: "job-5",
+    _id: "job-5",
     title: "QA Automation Engineer",
     company: "HirePulse Platform",
     category: "Engineering & Tech",
@@ -151,6 +122,7 @@ export const DUMMY_JOB_POSTS: JobPost[] = [
     salaryFrequency: "per hour",
     responsibilities: "Automate regression suites for the web platform.",
     requirements: "Playwright or Cypress experience in a CI environment.",
+    createdAt: "2025-04-12T00:00:00.000Z",
     applicants: 8,
     status: "Expired",
     postedLabel: "Closed",
@@ -187,4 +159,27 @@ export function formatDeadline(iso: string) {
     day: "numeric",
     year: "numeric",
   })
+}
+
+// ── JobRecord → JobPost (fills the table-only display fields) ────────────────
+
+function formatPostedLabel(createdAt: string) {
+  const posted = new Date(createdAt)
+  if (Number.isNaN(posted.getTime())) return "—"
+  const days = Math.floor((Date.now() - posted.getTime()) / 86_400_000)
+  if (days < 1) return "Posted today"
+  if (days < 14) return `Posted ${days}d ago`
+  return `Posted ${Math.floor(days / 7)}w ago`
+}
+
+/** Maps a saved MongoDB document to the display row the table renders. */
+export function toJobPost(record: JobRecord): JobPost {
+  const deadlinePassed =
+    record.deadline !== "" && new Date(`${record.deadline}T23:59:59`) < new Date()
+  return {
+    ...record,
+    applicants: record.applicants ?? 0,
+    status: deadlinePassed ? "Expired" : "Active",
+    postedLabel: record.createdAt ? formatPostedLabel(record.createdAt) : "—",
+  }
 }

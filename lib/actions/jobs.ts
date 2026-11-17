@@ -1,11 +1,13 @@
 "use server";
 
+import { ObjectId } from "mongodb";
 import { db } from "@/lib/db";
 import { type JobFormData } from "@/lib/jobs";
 
-// Saves the job post straight into the Atlas `Adminloop.jobs` collection.
-// (There is no separate backend server — the Next app talks to MongoDB directly,
-// the same connection better-auth uses for the account/session/user collections.)
+// All job persistence goes straight into the Atlas `Adminloop.jobs`
+// collection — the same connection better-auth uses.
+
+/** Publishes a job post from the New Job form. */
 export async function createJob(data: JobFormData) {
   const result = await db.collection("jobs").insertOne({
     ...data,
@@ -19,9 +21,15 @@ export async function createJob(data: JobFormData) {
   return { success: true, id: result.insertedId.toString() };
 }
 
-export const deleteJob = async (jobId: string) => {
-    const res = await fetch(`${BASE_URL}/jobs/${jobId}`, {
-        method: 'DELETE',
-    });
-    return res.json();
+/** Permanently removes a job post by its MongoDB id. */
+export async function deleteJob(jobId: string) {
+  if (!ObjectId.isValid(jobId)) {
+    return { deletedCount: 0 };
+  }
+
+  const result = await db.collection("jobs").deleteOne({
+    _id: new ObjectId(jobId),
+  });
+
+  return { deletedCount: result.deletedCount };
 }

@@ -1,12 +1,9 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -18,6 +15,11 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
+import { inputFieldClass, textareaFieldClass, brandButtonClass } from "@/lib/styles"
+import { FormField } from "@/app/components/FormField"
+import { PageShell } from "@/app/components/PageShell"
+import { PageHeader } from "@/app/components/PageHeader"
+import { SectionCard, SectionHeading } from "@/app/components/SectionCard"
 import {
   CATEGORIES,
   INITIAL_JOB_FORM,
@@ -25,44 +27,6 @@ import {
   SALARY_FREQUENCIES,
   type JobFormData,
 } from "@/lib/jobs"
-
-// ── Small building blocks ────────────────────────────────────────────────────
-
-const fieldClass =
-  "h-9 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
-
-function SectionHeading({ index, title }: { index: number; title: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand/15 text-sm font-semibold text-brand">
-        {index}
-      </span>
-      <h2 className="text-base font-semibold text-white">{title}</h2>
-    </div>
-  )
-}
-
-function Field({
-  label,
-  htmlFor,
-  required,
-  children,
-}: {
-  label: string
-  htmlFor: string
-  required?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="text-neutral-300">
-        {label}
-        {required && <span className="text-brand">*</span>}
-      </Label>
-      {children}
-    </div>
-  )
-}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -93,38 +57,25 @@ export default function NewJobPage() {
 
 
   return (
-    <main className="min-h-svh bg-[#101010] px-6 py-8">
-      <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        {/* Header — breadcrumb, title and the publish action (as in the design) */}
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-1.5">
-            <nav className="flex items-center gap-1 text-sm text-neutral-400">
-              <Link
-                href="/dashboard/recruiter/jobs"
-                className="transition-colors hover:text-white"
-              >
-                Manage Jobs
-              </Link>
-              <ChevronRight className="size-3.5 text-neutral-600" />
-              <span className="text-neutral-300">Create New Listing</span>
-            </nav>
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
-              Post a New Job
-            </h1>
-            <p className="text-sm text-neutral-400">
-              Fill in the position specifications to attract qualified talent
-              across our network.
-            </p>
-          </div>
+    <PageShell>
+      <PageHeader
+        crumbs={[
+          { label: "Manage Jobs", href: "/dashboard/recruiter/jobs" },
+          { label: "Create New Listing" },
+        ]}
+        title="Post a New Job"
+        description="Fill in the position specifications to attract qualified talent across our network."
+        action={
           <Button
             type="submit"
             form="new-job-form"
             disabled={submitting}
-            className="h-10 bg-brand px-5 text-brand-foreground hover:bg-brand-hover"
+            className={brandButtonClass}
           >
             {submitting ? "Publishing…" : "Publish Job"}
           </Button>
-        </header>
+        }
+      />
 
         <form
           id="new-job-form"
@@ -132,42 +83,42 @@ export default function NewJobPage() {
           className="flex flex-col gap-6"
         >
           {/* 1. Basic Information */}
-          <section className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#151515] p-6">
+          <SectionCard>
             <SectionHeading index={1} title="Basic Information" />
 
-            <Field label="Job Title" htmlFor="title" required>
+            <FormField label="Job Title" htmlFor="title" required>
               <Input
                 id="title"
                 type="text"
                 required
                 placeholder="Frontend Developer"
-                className={fieldClass}
+                className={inputFieldClass}
                 value={form.title}
                 onChange={(e) => update("title", e.target.value)}
               />
-            </Field>
+            </FormField>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Company Name" htmlFor="company" required>
+              <FormField label="Company Name" htmlFor="company" required>
                 <Input
                   id="company"
                   type="text"
                   required
                   placeholder="HirePulse Network"
-                  className={fieldClass}
+                  className={inputFieldClass}
                   value={form.company}
                   onChange={(e) => update("company", e.target.value)}
                 />
-              </Field>
+              </FormField>
 
-              <Field label="Job Category" htmlFor="category" required>
+              <FormField label="Job Category" htmlFor="category" required>
                 <Select
                   value={form.category}
                   onValueChange={(value) => update("category", value ?? form.category)}
                 >
                   <SelectTrigger
                     id="category"
-                    className={cn("w-full", fieldClass)}
+                    className={cn("w-full", inputFieldClass)}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -179,10 +130,10 @@ export default function NewJobPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </Field>
+              </FormField>
             </div>
 
-            <Field label="Job Type" htmlFor="job-type" required>
+            <FormField label="Job Type" htmlFor="job-type" required>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {JOB_TYPES.map((type) => (
                   <button
@@ -201,11 +152,11 @@ export default function NewJobPage() {
                   </button>
                 ))}
               </div>
-            </Field>
-          </section>
+            </FormField>
+          </SectionCard>
 
           {/* 2. Location, Compensation & Timeline */}
-          <section className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#151515] p-6">
+          <SectionCard>
             <SectionHeading index={2} title="Location, Compensation & Timeline" />
 
             {/* Remote work toggle */}
@@ -226,62 +177,62 @@ export default function NewJobPage() {
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Job Location" htmlFor="location" required>
+              <FormField label="Job Location" htmlFor="location" required>
                 <Input
                   id="location"
                   type="text"
                   required
                   placeholder="New York, USA"
-                  className={fieldClass}
+                  className={inputFieldClass}
                   value={form.location}
                   onChange={(e) => update("location", e.target.value)}
                 />
-              </Field>
+              </FormField>
 
-              <Field label="Application Deadline" htmlFor="deadline">
+              <FormField label="Application Deadline" htmlFor="deadline">
                 <Input
                   id="deadline"
                   type="date"
-                  className={cn(fieldClass, "[color-scheme:dark]")}
+                  className={cn(inputFieldClass, "[color-scheme:dark]")}
                   value={form.deadline}
                   onChange={(e) => update("deadline", e.target.value)}
                 />
-              </Field>
+              </FormField>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-3">
-              <Field label="Min Salary / Rate" htmlFor="min-salary">
+              <FormField label="Min Salary / Rate" htmlFor="min-salary">
                 <Input
                   id="min-salary"
                   type="number"
                   min="0"
                   placeholder="20"
-                  className={fieldClass}
+                  className={inputFieldClass}
                   value={form.minSalary}
                   onChange={(e) => update("minSalary", e.target.value)}
                 />
-              </Field>
+              </FormField>
 
-              <Field label="Max Salary / Rate" htmlFor="max-salary">
+              <FormField label="Max Salary / Rate" htmlFor="max-salary">
                 <Input
                   id="max-salary"
                   type="number"
                   min="0"
                   placeholder="50"
-                  className={fieldClass}
+                  className={inputFieldClass}
                   value={form.maxSalary}
                   onChange={(e) => update("maxSalary", e.target.value)}
                 />
-              </Field>
+              </FormField>
 
-              <Field label="Frequency" htmlFor="salary-frequency">
+              <FormField label="Frequency" htmlFor="salary-frequency">
                 <Select
                   value={form.salaryFrequency}
                   onValueChange={(value) => update("salaryFrequency", value ?? form.salaryFrequency)}
                 >
                   <SelectTrigger
                     id="salary-frequency"
-                    className={cn("w-full", fieldClass)}
+                    className={cn("w-full", inputFieldClass)}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -293,38 +244,38 @@ export default function NewJobPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </Field>
+              </FormField>
             </div>
-          </section>
+          </SectionCard>
 
           {/* 3. Responsibilities & Requirements */}
-          <section className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#151515] p-6">
+          <SectionCard>
             <SectionHeading index={3} title="Responsibilities & Requirements" />
 
-            <Field label="Key Responsibilities" htmlFor="responsibilities" required>
+            <FormField label="Key Responsibilities" htmlFor="responsibilities" required>
               <Textarea
                 id="responsibilities"
                 required
                 rows={4}
                 placeholder="Describe the day-to-day work, separated by new lines or bullets…"
-                className="min-h-28 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
+                className={textareaFieldClass}
                 value={form.responsibilities}
                 onChange={(e) => update("responsibilities", e.target.value)}
               />
-            </Field>
+            </FormField>
 
-            <Field label="Qualifications & Requirements" htmlFor="requirements" required>
+            <FormField label="Qualifications & Requirements" htmlFor="requirements" required>
               <Textarea
                 id="requirements"
                 required
                 rows={4}
                 placeholder={"• 3+ years of experience with React\n• Solid understanding of DOM performance"}
-                className="min-h-28 rounded-lg border-white/10 bg-white/5 text-white placeholder:text-neutral-500 focus-visible:border-brand-hover/60 focus-visible:ring-brand/25 dark:bg-white/5"
+                className={textareaFieldClass}
                 value={form.requirements}
                 onChange={(e) => update("requirements", e.target.value)}
               />
-            </Field>
-          </section>
+            </FormField>
+          </SectionCard>
 
           {collected && (
             <p
@@ -340,7 +291,6 @@ export default function NewJobPage() {
             </p>
           )}
         </form>
-      </div>
-    </main>
+    </PageShell>
   )
 }

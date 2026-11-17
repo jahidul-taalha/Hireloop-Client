@@ -1,6 +1,8 @@
-'use client'
+"use client"
 
 import { Trash2Icon } from "lucide-react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import {
     AlertDialog,
@@ -15,49 +17,80 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { useState } from "react";
-import { deleteJob } from "@/lib/actions/jobs";
 import { toast } from "@/components/ui/toast"
+import { cn } from "@/lib/utils"
+import { deleteJob } from "@/lib/actions/jobs"
+import type { JobRecord } from "@/lib/types"
 
-import { useRouter } from 'next/navigation'
-
-export function DeleteJobDialog({ job }: { job: jobRow }) {
-    const [open, setopen] = useState(false);
-    const router = useRouter();
+/** Trash button that asks for confirmation, then deletes via the server action. */
+export function DeleteJobDialog({
+    job,
+    className,
+}: {
+    job: Pick<JobRecord, "_id" | "title">
+    /** Extra classes for the trigger button (defaults to the table ghost style). */
+    className?: string
+}) {
+    const [open, setOpen] = useState(false)
+    const [deleting, setDeleting] = useState(false)
+    const router = useRouter()
 
     const handleDelete = async () => {
-        const res = await deleteJob(job._id);
+        setDeleting(true)
+        try {
+            const res = await deleteJob(job._id)
 
-        if (res.deletedCount) {
-            setopen(false);
-            toast.add({
-                title: "Event created",
-                description: "Sunday, December 3 at 9:00 AM",
-            })
-            router.refresh();
+            if (res.deletedCount) {
+                setOpen(false)
+                toast.add({
+                    type: "success",
+                    title: "Job post deleted",
+                    description: `"${job.title}" was permanently removed from your listings.`,
+                })
+                router.refresh()
+            }
+        } finally {
+            setDeleting(false)
         }
     }
 
     return (
-        <AlertDialog open={open} onOpenChange={setopen}>
+        <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger
-                render={<Button variant="destructive"><Trash2Icon /></Button>}
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete ${job.title}`}
+                        title="Delete"
+                        className={cn(
+                            "text-neutral-400 hover:bg-destructive/15 hover:text-destructive",
+                            className
+                        )}
+                    >
+                        <Trash2Icon className="size-4" />
+                    </Button>
+                }
             />
             <AlertDialogContent size="sm">
                 <AlertDialogHeader>
                     <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
                         <Trash2Icon />
                     </AlertDialogMedia>
-                    <AlertDialogTitle>Delete chat?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete job post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This will permanently delete this chat conversation. View{" "}
-                        <a href="#">Settings</a> delete any memories saved during this chat.
+                        This will permanently delete &quot;{job.title}&quot; and remove it from
+                        your job listings. This action cannot be undone.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                        Delete
+                    <AlertDialogAction
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleting}
+                    >
+                        {deleting ? "Deleting…" : "Delete"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
